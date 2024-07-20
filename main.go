@@ -6,14 +6,20 @@ import (
 	"github.com/Xebec19/solid-fishstick/p2p"
 )
 
+func noopFunc(a int32) error {
+	return nil
+}
+
 func main() {
 
 	tr := p2p.TCPTransportOpts{
 		ListenAddr:    ":3000",
-		HandshakeFunc: func() { return },
+		HandshakeFunc: noopFunc(12),
 	}
 
-	if err := tr.ListenAndAccept(); err != nil {
+	conn := p2p.NewTCPTransport(tr)
+
+	if err := conn.ListenAndAccept(); err != nil {
 		log.Fatal(err)
 	}
 
