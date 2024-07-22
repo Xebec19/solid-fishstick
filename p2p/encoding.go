@@ -8,15 +8,23 @@ import (
 type GOBDecoder struct{}
 
 type Decoder interface {
-	Decode(io.Reader, any) error
+	Decode(io.Reader, *Message) error
 }
 
-func (doc GOBDecoder) Decode(r io.Reader, v any) error {
-	return gob.NewDecoder(r).Decode(v)
+func (doc GOBDecoder) Decode(r io.Reader, msg *Message) error {
+	return gob.NewDecoder(r).Decode(msg)
 }
 
-type GODDecoder struct{}
+type DefaultDecoder struct{}
 
-func (dec GODDecoder) Decode(r io.Reader, v any) error {
-	return gob.NewDecoder(r).Decode(v)
+func (dec DefaultDecoder) Decode(r io.Reader, msg *Message) error {
+	buf := make([]byte, 1028)
+	n, err := r.Read(buf)
+	if err != nil {
+		return err
+	}
+
+	msg.Payload = buf[:n]
+
+	return nil
 }
