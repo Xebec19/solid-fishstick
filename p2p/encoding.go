@@ -14,3 +14,9 @@ type Decoder interface {
 func (doc GOBDecoder) Decode(r io.Reader, v any) error {
 	return gob.NewDecoder(r).Decode(v)
 }
+
+type GODDecoder struct{}
+
+func (dec GODDecoder) Decode(r io.Reader, v any) error {
+	return gob.NewDecoder(r).Decode(v)
+}
