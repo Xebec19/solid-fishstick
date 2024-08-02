@@ -8,4 +8,5 @@ type Peer interface {
 // between the nodes in the network
 type Transport interface {
 	ListenAndAccept() error
+	Consume() <-chan RPC
 }
