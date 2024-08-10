@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"strings"
@@ -60,6 +61,28 @@ func NewStore(opts StoreOpts) *Store {
 	return &Store{
 		StoreOpts: opts,
 	}
+}
+
+func (s *Store) Has(key string) bool {
+	pathkey := s.PathTransformFunc(key)
+
+	_, err := os.Stat(pathkey.Fullpath())
+	if err == fs.ErrNotExist {
+		return false
+	}
+
+	return true
+}
+
+// todo burst cache when you delete
+func (s *Store) Delete(key string) error {
+	pathKey := s.PathTransformFunc(key)
+
+	defer func() {
+		log.Printf("deleted [%s] from disk", pathKey.Filename)
+	}()
+
+	return os.RemoveAll(pathKey.Fullpath())
 }
 
 func (s *Store) Read(key string) (io.Reader, error) {
