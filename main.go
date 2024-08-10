@@ -8,6 +8,7 @@ import (
 )
 
 func OnPeer(peer p2p.Peer) error {
+	peer.Close()
 	return fmt.Errorf("failed the onpeer func")
 }
 
