@@ -91,13 +91,18 @@ func NewStore(opts StoreOpts) *Store {
 
 func (s *Store) Has(key string) bool {
 	pathkey := s.PathTransformFunc(key)
+	fullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, pathkey.Fullpath())
 
-	_, err := os.Stat(pathkey.Fullpath())
+	_, err := os.Stat(fullPathWithRoot)
 	if errors.Is(err, os.ErrNotExist) {
 		return false
 	}
 
 	return true
+}
+
+func (s *Store) Clear() error {
+	return os.RemoveAll(s.Root)
 }
 
 // todo burst cache when you delete
@@ -158,3 +163,5 @@ func (s *Store) writeStream(key string, r io.Reader) error {
 
 	return nil
 }
+
+// todo cntn from 3:00

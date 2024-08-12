@@ -7,6 +7,20 @@ import (
 	"testing"
 )
 
+func newStore() *Store {
+	opts := StoreOpts{
+		PathTransformFunc: CASPathTransformFunc,
+	}
+
+	return NewStore(opts)
+}
+
+func tearDown(t *testing.T, s *Store) {
+	if err := s.Clear(); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestPathTransformFunc(t *testing.T) {
 	key := "bestpicture"
 	pathkey := CASPathTransformFunc(key)
@@ -25,11 +39,8 @@ func TestPathTransformFunc(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	opts := StoreOpts{
-		PathTransformFunc: CASPathTransformFunc,
-	}
 
-	s := NewStore(opts)
+	s := newStore()
 	key := "specials"
 	data := []byte("some jpg bytes")
 
@@ -43,28 +54,33 @@ func TestDelete(t *testing.T) {
 }
 
 func TestStore(t *testing.T) {
-	opts := StoreOpts{
-		PathTransformFunc: CASPathTransformFunc,
+
+	s := newStore()
+
+	defer tearDown(t, s)
+
+	for i := 0; i < 50; i++ {
+		key := "123specials"
+		data := []byte("some jpg bytes")
+
+		if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
+			t.Error(err)
+		}
+
+		r, err := s.Read(key)
+		if err != nil {
+			t.Error(err)
+		}
+
+		b, _ := ioutil.ReadAll(r)
+
+		if string(b) != string(data) {
+			t.Errorf("want %s have %s", data, b)
+		}
+
+		if err := s.Delete(key); err != nil {
+			t.Error(err)
+		}
 	}
-	s := NewStore(opts)
 
-	key := "specials"
-	data := []byte("some jpg bytes")
-
-	if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
-		t.Error(err)
-	}
-
-	r, err := s.Read(key)
-	if err != nil {
-		t.Error(err)
-	}
-
-	b, _ := ioutil.ReadAll(r)
-
-	if string(b) != string(data) {
-		t.Errorf("want %s have %s", data, b)
-	}
-
-	s.Delete(key)
 }
