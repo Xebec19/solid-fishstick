@@ -26,15 +26,15 @@ func TestPathTransformFunc(t *testing.T) {
 	pathkey := CASPathTransformFunc(key)
 	fmt.Println(pathkey)
 
-	originalPathname := "71056ad8aa24742ea41ea36fa2e3452a31636e82"
+	expectedFilename := "71056ad8aa24742ea41ea36fa2e3452a31636e82"
 	expectedPathname := "71056/ad8aa/24742/ea41e/a36fa/2e345/2a316/36e82"
 
 	if pathkey.Pathname != expectedPathname {
 		t.Errorf("have %s want %s", pathkey, expectedPathname)
 	}
 
-	if pathkey.Filename != originalPathname {
-		t.Errorf("have %s want %s", pathkey, originalPathname)
+	if pathkey.Filename != expectedFilename {
+		t.Errorf("have %s want %s", pathkey, expectedFilename)
 	}
 }
 
