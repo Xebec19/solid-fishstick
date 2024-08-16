@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/Xebec19/solid-fishstick/p2p"
 )
@@ -29,5 +30,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	select {}
+	go func() {
+		time.Sleep(time.Second * 3)
+		s.Stop()
+	}()
 }
