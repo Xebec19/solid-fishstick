@@ -2,15 +2,14 @@ package main
 
 import (
 	"log"
-	"time"
 
 	"github.com/Xebec19/solid-fishstick/p2p"
 )
 
-func main() {
+func makeServer(listenAddr string, nodes ...string) *FileServer {
 
 	tcpTransportOpts := p2p.TCPTransportOpts{
-		ListenAddr:    ":3000",
+		ListenAddr:    listenAddr,
 		HandshakeFunc: p2p.NOPHandshakeFunc,
 		Decoder:       p2p.DefaultDecoder{},
 	}
@@ -18,20 +17,29 @@ func main() {
 	tcpTransport := p2p.NewTCPTransport(tcpTransportOpts)
 
 	fileServerOpts := FileServerOpts{
-		ListenAddr:        ":3000",
-		StorageRoot:       "3000_network",
+		// ListenAddr:        ":3000",
+		StorageRoot:       listenAddr + "_network",
 		PathTransformFunc: CASPathTransformFunc,
 		Transport:         tcpTransport,
+		BootstrapNodes:    nodes,
 	}
 
-	s := NewFileServer(fileServerOpts)
+	return NewFileServer(fileServerOpts)
+}
 
-	if err := s.Start(); err != nil {
-		log.Fatal(err)
-	}
+func main() {
 
-	go func() {
-		time.Sleep(time.Second * 3)
-		s.Stop()
-	}()
+	s1 := makeServer(":3000", "")
+
+	s2 := makeServer(":4000", ":3000")
+
+	go func() { log.Fatal(s1.Start()) }()
+
+	go func() { log.Fatal(s2.Start()) }()
+
+	// go func() {
+	// 	time.Sleep(time.Second * 3)
+	// 	s1.Stop()
+	// 	s2.Stop()
+	// }()
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/Xebec19/solid-fishstick/p2p"
 )
@@ -18,6 +19,10 @@ type FileServerOpts struct {
 
 type FileServer struct {
 	FileServerOpts
+
+	peerLock sync.Mutex
+	peers    map[string]p2p.Peer
+
 	store  *Store
 	quitch chan struct{}
 }
@@ -37,12 +42,25 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 		FileServerOpts: opts,
 		store:          NewStore(storeOpts),
 		quitch:         make(chan struct{}),
+		peers:          make(map[string]p2p.Peer),
 	}
 }
 
 func (s *FileServer) bootstrapNetwork() error {
+
 	for _, addr := range s.BootstrapNodes {
-		// s.Transport.Dial()
+
+		if len(addr) == 0 {
+			continue
+		}
+
+		go func(addr string) {
+			fmt.Println("attempting to connect with nodes : ", addr)
+
+			if err := s.Transport.Dial(addr); err != nil {
+				log.Println("dial error: ", err)
+			}
+		}(addr)
 	}
 
 	return nil
@@ -53,6 +71,8 @@ func (s *FileServer) Start() error {
 	if err := s.Transport.ListenAndAccept(); err != nil {
 		return err
 	}
+
+	s.bootstrapNetwork()
 
 	s.loop()
 
